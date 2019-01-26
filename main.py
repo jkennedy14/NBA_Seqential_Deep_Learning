@@ -22,6 +22,8 @@ playerMoveDS = pd.DataFrame(columns=['Unnamed: 0', 'Year', 'Player', 'Pos', 'Age
 npdf2=df2.values
 import numpy as np
 
+#Detect instances of players switching teams
+
 j=0
 for i in range(npdf2.shape[0]):
     newline=[]
@@ -31,7 +33,6 @@ for i in range(npdf2.shape[0]):
             playerMoveDS.loc[j]=a
             j+=1
             
-#get per game numbers ### ********************** CHANGE TO PER MIN ----- CHECK ----
 
 colstostd=['OBPM', 'DBPM', 'BPM','FG', 'FGA',
        '3P', '3PA', '2P', '2PA', 'FT', 'FTA',
@@ -41,7 +42,7 @@ colstostd=['OBPM', 'DBPM', 'BPM','FG', 'FGA',
        'ORB1', 'DRB1', 'TRB1', 'AST1', 'STL1', 'BLK1', 'TOV1', 'PF1',
        'PTS1', 'DWS', 'OWS']
 
-playerMoveDS.iloc[5000]
+#Put stats on per minute basis (except for percentage stats)
 
 for i in colstostd:
     playerMoveDS[i]=playerMoveDS[i]/playerMoveDS['MP']
@@ -141,6 +142,9 @@ playerMoveDS['Tm1']=playerMoveDS['Tm1'].replace({'WSB': 'Washington Bullets'}, r
 playerMoveDS['Tm1']=playerMoveDS['Tm1'].replace({'OKC': 'Oklahoma City Thunder'}, regex=True)
 playerMoveDS['Tm1']=playerMoveDS['Tm1'].replace({'KCK': 'Kansas City Kings'}, regex=True)
 
+#Read in NBA season TEAM stats datasets (seperate from individual stats datasets) 
+#Each dataset is composed of 3 seperate datasets per season: Team Statistics, Team Opponent Statistics, Miscellaneous Statistics    
+
 nba1980=pd.read_excel('nba1980.xlsx', header=None)
 nba1981=pd.read_excel('nba1981.xlsx', header=None)
 nba1982=pd.read_excel('nba1982.xlsx', header=None)
@@ -185,6 +189,8 @@ nba2017=pd.read_excel('nba2017.xlsx', header=None)
 nba2018=pd.read_excel('nba2018.xlsx', header=None)
 
 nba1982=nba1982.drop([27], axis=1)
+
+#Separating inputted data team, opponent, misc datasets
 
 nba1980team=nba1980[:24]
 nba1980opp=nba1980[25:49]
@@ -344,6 +350,8 @@ nba2018misc=nba2018[66:]
 
 nba2018misc=nba2018misc[1:]
 
+#Cleaning headers of data
+
 for i in range(39):
     string=str(1980+i)
     team=eval("nba"+string+"team")
@@ -358,6 +366,7 @@ for i in range(39):
     opp=opp[1:]
     misc=misc[1:]   
 
+#Add year column to all datasets, eliminate unecessary columns
 
 teams=[]
 opps=[]
@@ -379,7 +388,9 @@ for i in range(39):
     teams.append(team)
     opps.append(opp)
     miscs.append(misc)
-    
+
+#Merge team,opp, misc stats by year
+       
 teamstatsbyyear=[]
 for i in range(39):
     a=teams[i].merge(opps[i], on="Team")
@@ -388,6 +399,8 @@ for i in range(39):
     teamstatsbyyear.append(b)
     
 #take out * from team and convert team to 3 letter abrev
+#change some col names
+
 for i in teamstatsbyyear:
     i['Team'] = i['Team'].map(lambda x: x.rstrip('*'))
     i['Team1']=i['Team']
@@ -451,6 +464,8 @@ teamsadj = pd.DataFrame(columns=
      'PW2', 'PL2', 'MOV2', 'SOS2', 'SRS2', 'ORtg2', 'DRtg2', 'Pace2', 'FTr2', '3PAr2', 'TS%2', 'eFG%Off2', 
      'TOV%Off2', 'ORB%2', 'FT/FGAOff2', 'eFG%Def2', 'TOV%Def2', 'DRB%2', 'FT/FGADef2', 'Attend.2', 'Attend./G2', 'year2', 'Team12' ])
 
+#Make datasets consistent in terms of team names
+
 for i in range(len(a)): 
     team=a[i][4] 
     team1=a[i][54]
@@ -511,14 +526,6 @@ PlayerTeamDF = pd.concat([playerMoveDS.reset_index(drop=True), teamsadj], axis=1
 regPT = PlayerTeamDF
 len(regPT.columns.values)
 
-#regPT=regPT.drop(['Team', 'Year', 'Year1', 'Player1',
-       #'Pos1', 'Age1', 'Tm1', 'G1', 'GS1', 'MP1', 'PER1', 'TS%1', '3PAr1',
-       #'FTr1', 'ORB%1', 'DRB%1', 'TRB%1', 'AST%1', 'STL%1', 'BLK%1',
-       #'TOV%1', 'USG%1', 'OWS1', 'DWS1', 'WS1', 'OBPM1',
-       #'DBPM1', 'BPM1', 'VORP1', 'FG1', 'FGA1', 'FG%1', '3P1', '3PA1',
-       #'3P%1', '2P1', '2PA1', '2P%1', 'eFG%1', 'FT1', 'FTA1', 'FT%1',
-       #'ORB1', 'DRB1', 'TRB1', 'AST1', 'STL1', 'BLK1', 'TOV1', 'PF1',
-       #'PTS1'], axis=1)
 
 regPT=regPT.drop(['Team', 'Year', 'Year1', 'Player1',
        'Pos1', 'Age1', 'Tm1', 'G1', 'GS1', 'PER1', 'TS%1', '3PAr1',
@@ -593,6 +600,9 @@ regPT = regPT[['Player','yearTeam1', 'Team1' ,'yearTeam2', 'Team2', 'Pos', 'Age'
 
 #General NA DROP****
 #regPT=regPT.dropna(subset=['WS/481', 'ORB%', 'DRB%','TRB%','AST%','STL%','BLK%','TOV%',''])
+
+#Drop 3P% col since it has lot of NA's, can manually reconstruct 3P% col by doing 3PM/3PA 
+
 regPT=regPT.drop(['3P%'], axis=1)
 
 regPT=regPT.dropna()
@@ -731,6 +741,8 @@ regPT2 = regPT2[['Player', 'yearTeam1', 'Team1', 'yearTeam2', 'Team2', 'Pos', 'A
 
 regPT=regPT2
 
+#SGD Regressor comparison; We compare proposed algo to SGD Regressor
+
 from sklearn.linear_model import SGDRegressor
 from sklearn.metrics import mean_absolute_error
 from sklearn.preprocessing import StandardScaler
@@ -744,6 +756,8 @@ mean=X.mean(axis=0)
 X-=mean
 std=X.std(axis=0)
 X/= std
+
+#Given training case example;
 
 train_data = X[4000:5000]
 train_ws=y[4000:5000]
@@ -804,7 +818,7 @@ def data():
     
     return train_data, train_ws, test_data, test_ws
 
-#adaptive version runs new create_model function on each training set input
+#****Adaptive version runs new create_model function on each training set input
 
 def create_model(train_data, train_ws, test_data, test_ws):
    
@@ -822,8 +836,6 @@ def create_model(train_data, train_ws, test_data, test_ws):
         model.add(Dense({{choice([16,32,64,256])}}))
         model.add(Dropout({{uniform(0, 1)}}))
         model.add(Dense({{choice([16,32,64,256])}}))
-    
-    
     
     if {{choice(['two', 'three', 'four', 'five'])}} == 'five':
         model.add(Dense({{choice([16,32,64,256])}}))
