@@ -50,6 +50,8 @@ playerMoveDS=playerMoveDS.round(4)
 playerMoveDS=playerMoveDS.drop(['blanl','blanl1', 'blank2', 'blank21','Unnamed: 01', 'Unnamed: 0'], axis=1)
 playerMoveDS["Year"] = playerMoveDS["Year"].astype(int)
 playerMoveDS["Year1"] = playerMoveDS["Year1"].astype(int)
+playerMoveDS = playerMoveDS.rename(columns={'Tm': 'Team'})
+playerMoveDS = playerMoveDS.rename(columns={'Tm1': 'Team2'})
 
 team_name_replace_dict={'GSW': 'Golden State Warriors', 'LAL': 'Los Angeles Lakers','PHO': 'Phoenix Suns',
                        'DAL': 'Dallas Mavericks','CHI': 'Chicago Bulls','IND': 'Indiana Pacers',
@@ -65,8 +67,8 @@ team_name_replace_dict={'GSW': 'Golden State Warriors', 'LAL': 'Los Angeles Lake
                        'OKC': 'Oklahoma City Thunder','KCK': 'Kansas City Kings'
                        }
 
-playerMoveDS=playerMoveDS.replace({'Tm': team_name_replace_dict}, regex=True)
-playerMoveDS=playerMoveDS.replace({'Tm1': team_name_replace_dict}, regex=True)
+playerMoveDS=playerMoveDS.replace({'Team': team_name_replace_dict}, regex=True)
+playerMoveDS=playerMoveDS.replace({'Team2': team_name_replace_dict}, regex=True)
 
 #Read in NBA season TEAM stats datasets (seperate from individual stats datasets) 
 #Each dataset is composed of 3 seperate datasets per season: Team Statistics, Team Opponent Statistics, Miscellaneous Statistics    
@@ -130,8 +132,8 @@ for i in range(1980,2019):
     
     #take out * from team and convert team to 3 letter abrev
     #change some col names
-    merge_final['Tm'] = merge_final['Tm'].map(lambda x: x.rstrip('*'))
-    merge_final['Tm1']=merge_final['Tm']
+    merge_final['Team'] = merge_final['Team'].map(lambda x: x.rstrip('*'))
+    merge_final['Team1']=merge_final['Team']
     merge_final.columns.values[66]="eFG%Off"
     merge_final.columns.values[70]="eFG%Def"
     merge_final.columns.values[69]="FT/FGAOff"
@@ -159,12 +161,12 @@ teams_adj = pd.DataFrame(columns=np.append(teams_dict[2018].columns.values, team
 
 #Make datasets consistent in terms of team names
 
-for i in range(len(playerMoveDS)): 
-    team=playerMoveDS[i][4] 
-    team1=playerMoveDS[i][54]
+for i in range(playerMoveDS.shape[0]): 
+    team=playerMoveDS.iloc[i]['Team'] 
+    team1=playerMoveDS.iloc[i]['Team2']
     
-    year=playerMoveDS[i][0]
-    year2=playerMoveDS[i][50]
+    year=playerMoveDS.iloc[i][0]
+    year2=playerMoveDS.iloc[i][50]
     stryear=str(year)
     stryear2=str(year2)
     
@@ -196,8 +198,8 @@ for i in range(len(playerMoveDS)):
         if team1=="Charlotte Bobcats":
             team1="Charlotte Hornets"
 
-    row1=c[stryear].loc[[team]]
-    row2=c[stryear2].loc[[team1]]
+    row1=teams_dict[stryear].loc[[team]]
+    row2=teams_dict[stryear2].loc[[team1]]
     row2.columns=teams_dict[2018].columns.values+'2'
     rows=pd.concat([row1.reset_index(drop=True), row2.reset_index(drop=True)], axis=1)
     
