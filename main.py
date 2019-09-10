@@ -13,41 +13,25 @@ from hyperas.distributions import choice, uniform
 from keras import optimizers
 import tensorflow as tf
 
-
 df = pd.read_csv('Seasons_Stats.csv')
 
 df= df.sort_values(by=['Player', 'Year'])
 df=df.dropna(subset=['Player'])
 df = df[df.Tm != "TOT"]
 
-playerMoveDS = pd.DataFrame(columns=['Unnamed: 0', 'Year', 'Player', 'Pos', 'Age', 'Tm', 'G', 'GS',
-       'MP', 'PER', 'TS%', '3PAr', 'FTr', 'ORB%', 'DRB%', 'TRB%', 'AST%',
-       'STL%', 'BLK%', 'TOV%', 'USG%', 'blanl', 'OWS', 'DWS', 'WS',
-       'WS/48', 'blank2', 'OBPM', 'DBPM', 'BPM', 'VORP', 'FG', 'FGA',
-       'FG%', '3P', '3PA', '3P%', '2P', '2PA', '2P%', 'eFG%', 'FT', 'FTA',
-       'FT%', 'ORB', 'DRB', 'TRB', 'AST', 'STL', 'BLK', 'TOV', 'PF',
-       'PTS', 'Unnamed: 01', 'Year1', 'Player1', 'Pos1', 'Age1', 'Tm1', 'G1', 'GS1',
-       'MP1', 'PER1', 'TS%1', '3PAr1', 'FTr1', 'ORB%1', 'DRB%1', 'TRB%1', 'AST%1',
-       'STL%1', 'BLK%1', 'TOV%1', 'USG%1', 'blanl1', 'OWS1', 'DWS1', 'WS1',
-       'WS/481', 'blank21', 'OBPM1', 'DBPM1', 'BPM1', 'VORP1', 'FG1', 'FGA1',
-       'FG%1', '3P1', '3PA1', '3P%1', '2P1', '2PA1', '2P%1', 'eFG%1', 'FT1', 'FTA1',
-       'FT%1', 'ORB1', 'DRB1', 'TRB1', 'AST1', 'STL1', 'BLK1', 'TOV1', 'PF1',
-       'PTS1'])
-
-npdf2=df.values
+playerMoveDS = pd.DataFrame(columns=np.append(df.columns.values, df.columns.values+'1'))
+npdf=df.values
 
 #Detect instances of players switching teams
 
 j=0
-for i in range(npdf2.shape[0]):
-    newline=[]
-    if npdf2[i][2]==npdf2[i-1][2]:
-        if npdf2[i][5]!=npdf2[i-1][5]:
-            a=np.append(npdf2[i-1],npdf2[i])
+for i in range(npdf.shape[0]):
+    if npdf[i][2]==npdf[i-1][2]:
+        if npdf[i][5]!=npdf[i-1][5]:
+            a=np.append(npdf[i-1],npdf[i])
             playerMoveDS.loc[j]=a
             j+=1
             
-
 cols_to_standardize=['OBPM', 'DBPM', 'BPM','FG', 'FGA',
        '3P', '3PA', '2P', '2PA', 'FT', 'FTA',
        'ORB', 'DRB', 'TRB', 'AST', 'STL', 'BLK', 'TOV', 'PF',
@@ -66,396 +50,112 @@ playerMoveDS=playerMoveDS.round(4)
 playerMoveDS=playerMoveDS.drop(['blanl','blanl1', 'blank2', 'blank21','Unnamed: 01', 'Unnamed: 0'], axis=1)
 playerMoveDS["Year"] = playerMoveDS["Year"].astype(int)
 playerMoveDS["Year1"] = playerMoveDS["Year1"].astype(int)
-playerMoveDS = playerMoveDS.rename(columns={'Tm': 'Team'})
 
-playerMoveDS['Team']=playerMoveDS['Team'].replace({'GSW': 'Golden State Warriors'}, regex=True)
-playerMoveDS['Team']=playerMoveDS['Team'].replace({'LAL': 'Los Angeles Lakers'}, regex=True)
-playerMoveDS['Team']=playerMoveDS['Team'].replace({'PHO': 'Phoenix Suns'}, regex=True)
-playerMoveDS['Team']=playerMoveDS['Team'].replace({'DAL': 'Dallas Mavericks'}, regex=True)
-playerMoveDS['Team']=playerMoveDS['Team'].replace({'CHI': 'Chicago Bulls'}, regex=True)
-playerMoveDS['Team']=playerMoveDS['Team'].replace({'IND': 'Indiana Pacers'}, regex=True)
-playerMoveDS['Team']=playerMoveDS['Team'].replace({'WAS': 'Washington Wizards'}, regex=True)
-playerMoveDS['Team']=playerMoveDS['Team'].replace({'MIN': 'Minnesota Timberwolves'}, regex=True)
-playerMoveDS['Team']=playerMoveDS['Team'].replace({'CLE': 'Cleveland Cavaliers'}, regex=True)
-playerMoveDS['Team']=playerMoveDS['Team'].replace({'HOU': 'Houston Rockets'}, regex=True)
-playerMoveDS['Team']=playerMoveDS['Team'].replace({'SAC': 'Sacramento Kings'}, regex=True)
-playerMoveDS['Team']=playerMoveDS['Team'].replace({'DEN': 'Denver Nuggets'}, regex=True)
-playerMoveDS['Team']=playerMoveDS['Team'].replace({'NOH': 'New Orleans Hornets'}, regex=True)
-playerMoveDS['Team']=playerMoveDS['Team'].replace({'TOR': 'Toronto Raptors'}, regex=True)
-playerMoveDS['Team']=playerMoveDS['Team'].replace({'POR': 'Portland Trail Blazers'}, regex=True)
-playerMoveDS['Team']=playerMoveDS['Team'].replace({'DET': 'Detroit Pistons'}, regex=True)
-playerMoveDS['Team']=playerMoveDS['Team'].replace({'PHI': 'Philadelphia 76ers'}, regex=True)
-playerMoveDS['Team']=playerMoveDS['Team'].replace({'UTA': 'Utah Jazz'}, regex=True)
-playerMoveDS['Team']=playerMoveDS['Team'].replace({'MIL': 'Milwaukee Bucks'}, regex=True)
-playerMoveDS['Team']=playerMoveDS['Team'].replace({'VAN': 'Vancouver Grizzlies'}, regex=True)
-playerMoveDS['Team']=playerMoveDS['Team'].replace({'SEA': 'Seattle SuperSonics'}, regex=True)
-playerMoveDS['Team']=playerMoveDS['Team'].replace({'NJN': 'New Jersey Nets'}, regex=True)
-playerMoveDS['Team']=playerMoveDS['Team'].replace({'NOK': 'New Orleans Hornets'}, regex=True)
-playerMoveDS['Team']=playerMoveDS['Team'].replace({'BOS': 'Boston Celtics'}, regex=True)
-playerMoveDS['Team']=playerMoveDS['Team'].replace({'ATL': 'Atlanta Hawks'}, regex=True)
-playerMoveDS['Team']=playerMoveDS['Team'].replace({'CHA': 'Charlotte Hornets'}, regex=True)
-playerMoveDS['Team']=playerMoveDS['Team'].replace({'MEM': 'Memphis Grizzlies'}, regex=True)
-playerMoveDS['Team']=playerMoveDS['Team'].replace({'ORL': 'Orlando Magic'}, regex=True)
-playerMoveDS['Team']=playerMoveDS['Team'].replace({'NYK': 'New York Knicks'}, regex=True)
-playerMoveDS['Team']=playerMoveDS['Team'].replace({'CHO': 'Charlotte Bobcats'}, regex=True)#
-playerMoveDS['Team']=playerMoveDS['Team'].replace({'LAC': 'Los Angeles Clippers'}, regex=True)
-playerMoveDS['Team']=playerMoveDS['Team'].replace({'SDC': 'San Diego Clippers'}, regex=True)
-playerMoveDS['Team']=playerMoveDS['Team'].replace({'NOP': 'New Orleans Pelicans'}, regex=True)
-playerMoveDS['Team']=playerMoveDS['Team'].replace({'BRK': 'Brooklyn Nets'}, regex=True)
-playerMoveDS['Team']=playerMoveDS['Team'].replace({'MIA': 'Miami Heat'}, regex=True)
-playerMoveDS['Team']=playerMoveDS['Team'].replace({'SAS': 'San Antonio Spurs'}, regex=True)
-playerMoveDS['Team']=playerMoveDS['Team'].replace({'CHH': 'Charlotte Hornets'}, regex=True)
-playerMoveDS['Team']=playerMoveDS['Team'].replace({'WSB': 'Washington Bullets'}, regex=True)
-playerMoveDS['Team']=playerMoveDS['Team'].replace({'OKC': 'Oklahoma City Thunder'}, regex=True)
-playerMoveDS['Team']=playerMoveDS['Team'].replace({'KCK': 'Kansas City Kings'}, regex=True)
+team_name_replace_dict={'GSW': 'Golden State Warriors', 'LAL': 'Los Angeles Lakers','PHO': 'Phoenix Suns',
+                       'DAL': 'Dallas Mavericks','CHI': 'Chicago Bulls','IND': 'Indiana Pacers',
+                       'WAS': 'Washington Wizards','MIN': 'Minnesota Timberwolves','CLE': 'Cleveland Cavaliers',
+                       'HOU': 'Houston Rockets','SAC': 'Sacramento Kings','DEN': 'Denver Nuggets', 
+                       'NOH': 'New Orleans Hornets','TOR': 'Toronto Raptors', 'POR': 'Portland Trail Blazers',
+                       'DET': 'Detroit Pistons','PHI': 'Philadelphia 76ers','UTA': 'Utah Jazz', 'MIL': 'Milwaukee Bucks',
+                       'VAN': 'Vancouver Grizzlies', 'SEA': 'Seattle SuperSonics', 'NJN': 'New Jersey Nets', 
+                       'NOK': 'New Orleans Hornets', 'BOS': 'Boston Celtics', 'ATL': 'Atlanta Hawks', 'CHA': 'Charlotte Hornets',
+                       'MEM': 'Memphis Grizzlies', 'ORL': 'Orlando Magic','NYK': 'New York Knicks', 'CHO': 'Charlotte Bobcats',
+                       'LAC': 'Los Angeles Clippers', 'SDC': 'San Diego Clippers', 'NOP': 'New Orleans Pelicans', 'BRK': 'Brooklyn Nets',
+                       'MIA': 'Miami Heat', 'SAS': 'San Antonio Spurs', 'CHH': 'Charlotte Hornets', 'WSB': 'Washington Bullets', 
+                       'OKC': 'Oklahoma City Thunder','KCK': 'Kansas City Kings'
+                       }
 
-playerMoveDS['Tm1']=playerMoveDS['Tm1'].replace({'GSW': 'Golden State Warriors'}, regex=True)
-playerMoveDS['Tm1']=playerMoveDS['Tm1'].replace({'LAL': 'Los Angeles Lakers'}, regex=True)
-playerMoveDS['Tm1']=playerMoveDS['Tm1'].replace({'PHO': 'Phoenix Suns'}, regex=True)
-playerMoveDS['Tm1']=playerMoveDS['Tm1'].replace({'DAL': 'Dallas Mavericks'}, regex=True)
-playerMoveDS['Tm1']=playerMoveDS['Tm1'].replace({'CHI': 'Chicago Bulls'}, regex=True)
-playerMoveDS['Tm1']=playerMoveDS['Tm1'].replace({'IND': 'Indiana Pacers'}, regex=True)
-playerMoveDS['Tm1']=playerMoveDS['Tm1'].replace({'WAS': 'Washington Wizards'}, regex=True)
-playerMoveDS['Tm1']=playerMoveDS['Tm1'].replace({'MIN': 'Minnesota Timberwolves'}, regex=True)
-playerMoveDS['Tm1']=playerMoveDS['Tm1'].replace({'CLE': 'Cleveland Cavaliers'}, regex=True)
-playerMoveDS['Tm1']=playerMoveDS['Tm1'].replace({'HOU': 'Houston Rockets'}, regex=True)
-playerMoveDS['Tm1']=playerMoveDS['Tm1'].replace({'SAC': 'Sacramento Kings'}, regex=True)
-playerMoveDS['Tm1']=playerMoveDS['Tm1'].replace({'DEN': 'Denver Nuggets'}, regex=True)
-playerMoveDS['Tm1']=playerMoveDS['Tm1'].replace({'NOH': 'New Orleans Hornets'}, regex=True)
-playerMoveDS['Tm1']=playerMoveDS['Tm1'].replace({'TOR': 'Toronto Raptors'}, regex=True)
-playerMoveDS['Tm1']=playerMoveDS['Tm1'].replace({'POR': 'Portland Trail Blazers'}, regex=True)
-playerMoveDS['Tm1']=playerMoveDS['Tm1'].replace({'DET': 'Detroit Pistons'}, regex=True)
-playerMoveDS['Tm1']=playerMoveDS['Tm1'].replace({'PHI': 'Philadelphia 76ers'}, regex=True)
-playerMoveDS['Tm1']=playerMoveDS['Tm1'].replace({'UTA': 'Utah Jazz'}, regex=True)
-playerMoveDS['Tm1']=playerMoveDS['Tm1'].replace({'MIL': 'Milwaukee Bucks'}, regex=True)
-playerMoveDS['Tm1']=playerMoveDS['Tm1'].replace({'VAN': 'Vancouver Grizzlies'}, regex=True)
-playerMoveDS['Tm1']=playerMoveDS['Tm1'].replace({'SEA': 'Seattle SuperSonics'}, regex=True)
-playerMoveDS['Tm1']=playerMoveDS['Tm1'].replace({'NJN': 'New Jersey Nets'}, regex=True)
-playerMoveDS['Tm1']=playerMoveDS['Tm1'].replace({'NOK': 'New Orleans Hornets'}, regex=True)
-playerMoveDS['Tm1']=playerMoveDS['Tm1'].replace({'BOS': 'Boston Celtics'}, regex=True)
-playerMoveDS['Tm1']=playerMoveDS['Tm1'].replace({'ATL': 'Atlanta Hawks'}, regex=True)
-playerMoveDS['Tm1']=playerMoveDS['Tm1'].replace({'CHA': 'Charlotte Hornets'}, regex=True)
-playerMoveDS['Tm1']=playerMoveDS['Tm1'].replace({'MEM': 'Memphis Grizzlies'}, regex=True)
-playerMoveDS['Tm1']=playerMoveDS['Tm1'].replace({'ORL': 'Orlando Magic'}, regex=True)
-playerMoveDS['Tm1']=playerMoveDS['Tm1'].replace({'NYK': 'New York Knicks'}, regex=True)
-playerMoveDS['Tm1']=playerMoveDS['Tm1'].replace({'CHO': 'Charlotte Bobcats'}, regex=True)#
-playerMoveDS['Tm1']=playerMoveDS['Tm1'].replace({'LAC': 'Los Angeles Clippers'}, regex=True)
-playerMoveDS['Tm1']=playerMoveDS['Tm1'].replace({'SDC': 'San Diego Clippers'}, regex=True)
-playerMoveDS['Tm1']=playerMoveDS['Tm1'].replace({'NOP': 'New Orleans Pelicans'}, regex=True)
-playerMoveDS['Tm1']=playerMoveDS['Tm1'].replace({'BRK': 'Brooklyn Nets'}, regex=True)
-playerMoveDS['Tm1']=playerMoveDS['Tm1'].replace({'MIA': 'Miami Heat'}, regex=True)
-playerMoveDS['Tm1']=playerMoveDS['Tm1'].replace({'SAS': 'San Antonio Spurs'}, regex=True)
-playerMoveDS['Tm1']=playerMoveDS['Tm1'].replace({'CHH': 'Charlotte Hornets'}, regex=True)
-playerMoveDS['Tm1']=playerMoveDS['Tm1'].replace({'WSB': 'Washington Bullets'}, regex=True)
-playerMoveDS['Tm1']=playerMoveDS['Tm1'].replace({'OKC': 'Oklahoma City Thunder'}, regex=True)
-playerMoveDS['Tm1']=playerMoveDS['Tm1'].replace({'KCK': 'Kansas City Kings'}, regex=True)
+playerMoveDS=playerMoveDS.replace({'Tm': team_name_replace_dict}, regex=True)
+playerMoveDS=playerMoveDS.replace({'Tm1': team_name_replace_dict}, regex=True)
 
 #Read in NBA season TEAM stats datasets (seperate from individual stats datasets) 
 #Each dataset is composed of 3 seperate datasets per season: Team Statistics, Team Opponent Statistics, Miscellaneous Statistics    
+#Separating inputted data team, opponent, misc datasets ; Data file shape depends on year due to different # teams/available stats
 
-nba1980=pd.read_excel('nba1980.xlsx', header=None)
-nba1981=pd.read_excel('nba1981.xlsx', header=None)
-nba1982=pd.read_excel('nba1982.xlsx', header=None)
-nba1983=pd.read_excel('nba1983.xlsx', header=None)
-nba1984=pd.read_excel('nba1984.xlsx', header=None)
-nba1985=pd.read_excel('nba1985.xlsx', header=None)
-nba1986=pd.read_excel('nba1986.xlsx', header=None)
-nba1987=pd.read_excel('nba1987.xlsx', header=None)
-nba1988=pd.read_excel('nba1988.xlsx', header=None)
-nba1989=pd.read_excel('nba1989.xlsx', header=None)
-
-nba1990=pd.read_excel('nba1990.xlsx', header=None)
-nba1991=pd.read_excel('nba1991.xlsx', header=None)
-nba1992=pd.read_excel('nba1992.xlsx', header=None)
-nba1993=pd.read_excel('nba1993.xlsx', header=None)
-nba1994=pd.read_excel('nba1994.xlsx', header=None)
-nba1995=pd.read_excel('nba1995.xlsx', header=None)
-nba1996=pd.read_excel('nba1996.xlsx', header=None)
-nba1997=pd.read_excel('nba1997.xlsx', header=None)
-nba1998=pd.read_excel('nba1998.xlsx', header=None)
-nba1999=pd.read_excel('nba1999.xlsx', header=None)
-
-nba2000=pd.read_excel('nba2000.xlsx', header=None)
-nba2001=pd.read_excel('nba2001.xlsx', header=None)
-nba2002=pd.read_excel('nba2002.xlsx', header=None)
-nba2003=pd.read_excel('nba2003.xlsx', header=None)
-nba2004=pd.read_excel('nba2004.xlsx', header=None)
-nba2005=pd.read_excel('nba2005.xlsx', header=None)
-nba2006=pd.read_excel('nba2006.xlsx', header=None)
-nba2007=pd.read_excel('nba2007.xlsx', header=None)
-nba2008=pd.read_excel('nba2008.xlsx', header=None)
-nba2009=pd.read_excel('nba2009.xlsx', header=None)
-
-nba2010=pd.read_excel('nba2010.xlsx', header=None)
-nba2011=pd.read_excel('nba2011.xlsx', header=None)
-nba2012=pd.read_excel('nba2012.xlsx', header=None)
-nba2013=pd.read_excel('nba2013.xlsx', header=None)
-nba2014=pd.read_excel('nba2014.xlsx', header=None)
-nba2015=pd.read_excel('nba2015.xlsx', header=None)
-nba2016=pd.read_excel('nba2016.xlsx', header=None)
-nba2017=pd.read_excel('nba2017.xlsx', header=None)
-nba2018=pd.read_excel('nba2018.xlsx', header=None)
-
-nba1982=nba1982.drop([27], axis=1)
-
-#Separating inputted data team, opponent, misc datasets
-
-nba1980team=nba1980[:24]
-nba1980opp=nba1980[25:49]
-nba1980misc=nba1980[50:]
-
-nba1981team=nba1981[:25]
-nba1981opp=nba1981[26:51]
-nba1981misc=nba1981[52:]
-
-nba1982team=nba1982[:25]
-nba1982opp=nba1982[26:51]
-nba1982misc=nba1982[52:]
-
-nba1983team=nba1983[:25]
-nba1983opp=nba1983[26:51]
-nba1983misc=nba1983[52:]
-
-nba1984team=nba1984[:25]
-nba1984opp=nba1984[26:51]
-nba1984misc=nba1984[52:]
-
-nba1985team=nba1985[:25]
-nba1985opp=nba1985[26:51]
-nba1985misc=nba1985[52:]
-
-nba1986team=nba1986[:25]
-nba1986opp=nba1986[26:51]
-nba1986misc=nba1986[52:]
-
-nba1987team=nba1987[:25]
-nba1987opp=nba1987[26:51]
-nba1987misc=nba1987[52:]
-
-nba1988team=nba1988[:25]
-nba1988opp=nba1988[26:51]
-nba1988misc=nba1988[52:]
-
-nba1989team=nba1989[:27]
-nba1989opp=nba1989[28:55]
-nba1989misc=nba1989[56:]
-
-nba1990team=nba1990[:29]
-nba1990opp=nba1990[30:59]
-nba1990misc=nba1990[60:]
-
-nba1991team=nba1991[:29]
-nba1991opp=nba1991[30:59]
-nba1991misc=nba1991[60:]
-
-nba1992team=nba1992[:29]
-nba1992opp=nba1992[30:59]
-nba1992misc=nba1992[60:]
-
-nba1993team=nba1993[:29]
-nba1993opp=nba1993[30:59]
-nba1993misc=nba1993[60:]
-
-nba1994team=nba1994[:29]
-nba1994opp=nba1994[30:59]
-nba1994misc=nba1994[60:]
-
-nba1995team=nba1995[:29]
-nba1995opp=nba1995[30:59]
-nba1995misc=nba1995[60:]
-
-nba1996team=nba1996[:31]
-nba1996opp=nba1996[32:63]
-nba1996misc=nba1996[64:]
-
-nba1997team=nba1997[:31]
-nba1997opp=nba1997[32:63]
-nba1997misc=nba1997[64:]
-
-nba1998team=nba1998[:31]
-nba1998opp=nba1998[32:63]
-nba1998misc=nba1998[64:]
-
-nba1999team=nba1999[:31]
-nba1999opp=nba1999[32:63]
-nba1999misc=nba1999[64:]
-
-nba2000team=nba2000[:31]
-nba2000opp=nba2000[32:63]
-nba2000misc=nba2000[64:]
-
-nba2001team=nba2001[:31]
-nba2001opp=nba2001[32:63]
-nba2001misc=nba2001[64:]
-
-nba2002team=nba2002[:31]
-nba2002opp=nba2002[32:63]
-nba2002misc=nba2002[64:]
-
-nba2003team=nba2003[:31]
-nba2003opp=nba2003[32:63]
-nba2003misc=nba2003[64:]
-
-nba2004team=nba2004[:31]
-nba2004opp=nba2004[32:63]
-nba2004misc=nba2004[64:]
-
-nba2005team=nba2005[:32]
-nba2005opp=nba2005[33:65]
-nba2005misc=nba2005[66:]
-
-nba2006team=nba2006[:32]
-nba2006opp=nba2006[33:65]
-nba2006misc=nba2006[66:]
-
-nba2007team=nba2007[:32]
-nba2007opp=nba2007[33:65]
-nba2007misc=nba2007[66:]
-
-nba2008team=nba2008[:32]
-nba2008opp=nba2008[33:65]
-nba2008misc=nba2008[66:]
-
-nba2009team=nba2009[:32]
-nba2009opp=nba2009[33:65]
-nba2009misc=nba2009[66:]
-
-nba2010team=nba2010[:32]
-nba2010opp=nba2010[33:65]
-nba2010misc=nba2010[66:]
-
-nba2011team=nba2011[:32]
-nba2011opp=nba2011[33:65]
-nba2011misc=nba2011[66:]
-
-nba2012team=nba2012[:32]
-nba2012opp=nba2012[33:65]
-nba2012misc=nba2012[66:]
-
-nba2013team=nba2013[:32]
-nba2013opp=nba2013[33:65]
-nba2013misc=nba2013[66:]
-
-nba2014team=nba2014[:32]
-nba2014opp=nba2014[33:65]
-nba2014misc=nba2014[66:]
-
-nba2015team=nba2015[:32]
-nba2015opp=nba2015[33:65]
-nba2015misc=nba2015[66:]
-
-nba2016team=nba2016[:32]
-nba2016opp=nba2016[33:65]
-nba2016misc=nba2016[66:]
-
-nba2017team=nba2017[:32]
-nba2017opp=nba2017[33:65]
-nba2017misc=nba2017[66:]
-
-nba2018team=nba2018[:32]
-nba2018opp=nba2018[33:65]
-nba2018misc=nba2018[66:]
-
-nba2018misc=nba2018misc[1:]
-
-#Cleaning headers of data
-
-for i in range(39):
-    string=str(1980+i)
-    team=eval("nba"+string+"team")
-    opp=eval("nba"+string+"opp")
-    misc=eval("nba"+string+"misc")
-    
-    team.columns = team.iloc[0]
-    opp.columns = opp.iloc[0]
-    misc.columns = misc.iloc[0]
+team_data={}
+for i in range(1980,2019):
+       team_data[i]={}
+       td=pd.read_excel('nba'+str(i)+'.xlsx', header=None)
+       if i==1982:
+              td=td.drop([27], axis=1)
+       if i==1980:
+              team=td[:24]
+              opp=td[25:49]
+              misc=td[50:]
+       elif i in list(range(1981, 1989)):
+              team=td[:25]
+              opp=td[26:51]
+              misc=td[52:]
+       elif i == 1989:
+              team=td[:27]
+              opp=td[28:55]
+              misc=td[56:]
+       elif i in list(range(1990,1996)):
+              team=td[:29]
+              opp=td[30:59]
+              misc=td[60:]
+       elif i in list(range(1996,2005)):
+              team=td[:31]
+              opp=td[32:63]
+              misc=td[64:]
+       elif i in list(range(2005,2019)):
+              team=td[:32]
+              opp=td[33:65]
+              misc=td[66:]
+       if i==2018:
+              misc=misc[1:]
        
-    team=team[1:]
-    opp=opp[1:]
-    misc=misc[1:]   
-
-#Add year column to all datasets, eliminate unecessary columns
-
-teams=[]
-opps=[]
-miscs=[]
-for i in range(39):
-    string=str(1980+i)
-    team=eval('nba'+string+'team')
-    opp=eval('nba'+string+'opp')
-    misc=eval('nba'+string+'misc')
+       team=team[1:]
+       opp=opp[1:]
+       misc=misc[1:]
+       
+       team=team.drop(['z'], axis=1)
+       opp=opp.drop(['z'], axis=1)
+       misc=misc.drop(['Arena'], axis=1)
     
-    team=team.drop(['z'], axis=1)
-    opp=opp.drop(['z'], axis=1)
-    misc=misc.drop(['Arena'], axis=1)
-    
-    team['year']=1980+i
-    opp['year']=1980+i
-    misc['year']=1980+i
-    
-    teams.append(team)
-    opps.append(opp)
-    miscs.append(misc)
+       team['year']=i
+       opp['year']=i
+       misc['year']=i
+       
+       team_data[i]['team']=team
+       team_data[i]['opp']=opp
+       team_data[i]['misc']=misc
 
 #Merge team,opp, misc stats by year
        
-teamstatsbyyear=[]
-for i in range(39):
-    a=teams[i].merge(opps[i], on="Team")
-    b=a.merge(miscs[i], on="Team")
+teams_dict={}
+for i in range(1980,2019):
+    merge_1=team_data[i]['team'].merge(team_data[i]['opp'], on="Team")
+    merge_final=merge_1.merge(team_data[i]['misc'], on="Team")
     
-    teamstatsbyyear.append(b)
+    #take out * from team and convert team to 3 letter abrev
+    #change some col names
+    merge_final['Tm'] = merge_final['Tm'].map(lambda x: x.rstrip('*'))
+    merge_final['Tm1']=merge_final['Tm']
+    merge_final.columns.values[66]="eFG%Off"
+    merge_final.columns.values[70]="eFG%Def"
+    merge_final.columns.values[69]="FT/FGAOff"
+    merge_final.columns.values[73]="FT/FGADef"
+    merge_final.columns.values[67]="TOV%Off"
+    merge_final.columns.values[71]="TOV%Def"
+    teams_dict[i]=merge_final
+    teams_dict[i].set_index("Team", inplace=True)
     
-#take out * from team and convert team to 3 letter abrev
-#change some col names
+teams_dict[1980].columns.values[74] = "Attend."
+teams_dict[1980].columns.values[75] = "Attend./G"
+teams_dict[1980]["Attend."]=0
+teams_dict[1980]["Attend./G"]=0
+teams_dict[2017].columns.values[9]="3P%_x"
+teams_dict[2017].columns.values[12]="2P%_x"
+teams_dict[2017].columns.values[34]="3P%_y"
+teams_dict[2017].columns.values[37]="2P%_y"
 
-for i in teamstatsbyyear:
-    i['Team'] = i['Team'].map(lambda x: x.rstrip('*'))
-    i['Team1']=i['Team']
-    i.columns.values[66]="eFG%Off"
-    i.columns.values[70]="eFG%Def"
-    
-    i.columns.values[69]="FT/FGAOff"
-    i.columns.values[73]="FT/FGADef"
-    
-    i.columns.values[67]="TOV%Off"
-    i.columns.values[71]="TOV%Def"
-    
-    
-
-teamstatsbyyear[0].columns.values[74] = "Attend."
-teamstatsbyyear[0].columns.values[75] = "Attend./G"
-
-teamstatsbyyear[0]["Attend."]=0
-teamstatsbyyear[0]["Attend./G"]=0
-
-for i in range(len(teamstatsbyyear[0]['Team'].values)):
-    team1981attend= teamstatsbyyear[1].loc[teamstatsbyyear[1]['Team']==teamstatsbyyear[0]['Team'].values[i]]['Attend.']
-    teamstatsbyyear[0].at[i,'Attend.']=team1981attend
-
-
-teamstatsbyyear[37].columns.values[9]="3P%_x"
-teamstatsbyyear[37].columns.values[12]="2P%_x"
-teamstatsbyyear[37].columns.values[34]="3P%_y"
-teamstatsbyyear[37].columns.values[37]="2P%_y"
-
-#Merge Individ Stats DF and Team DF
-#turn teamsbyyear into dict
-teamsdict={}
-
-for i in range(0,39): 
-    stri=str(i+1980) 
-    teamsdict[stri]=teamstatsbyyear[i]
-
-c=teamsdict 
-    
-for i in range(1980,2019): 
-    j=str(i) 
-    c[j].set_index("Team", inplace=True)
+#No attendance data for 1980 season -- Use 1981 season attendance data in this case
+for i in range(len(teams_dict[1980]['Team'].values)):
+    team1981attend= teams_dict[1981].loc[teams_dict[1981]['Team']==teams_dict[1980]['Team'].values[i]]['Attend.']
+    teams_dict[1980].at[i,'Attend.']=team1981attend
         
-a=playerMoveDS.values 
-
-teamsadj = pd.DataFrame(columns=
+teams_adj = pd.DataFrame(columns=
     ['Rk_x', 'G_x', 'MP_x', 'FG_x', 'FGA_x', 'FG%_x', '3P_x', '3PA_x', '3P%_x', '2P_x', 
      '2PA_x', '2P%_x', 'FT_x', 'FTA_x', 'FT%_x', 'ORB_x', 'DRB_x', 'TRB_x', 'AST_x', 
      'STL_x', 'BLK_x', 'TOV_x', 'PF_x', 'PTS_x', 'year_x', 'Rk_y', 'G_y', 'MP_y', 'FG_y', 
@@ -474,7 +174,7 @@ teamsadj = pd.DataFrame(columns=
 
 #Make datasets consistent in terms of team names
 
-for i in range(len(a)): 
+for i in range(len(playerMoveDS)): 
     team=a[i][4] 
     team1=a[i][54]
     
@@ -749,6 +449,7 @@ regPT2 = regPT2[['Player', 'yearTeam1', 'Team1', 'yearTeam2', 'Team2', 'Pos', 'A
 
 regPT=regPT2
 
+#****************************************************************************************************************************************
 #SGD Regressor comparison; We compare proposed algo to SGD Regressor
 
 X=regPT.loc[:, 'Age':'Attend.Team2Diff']
