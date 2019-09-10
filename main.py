@@ -155,31 +155,16 @@ for i in range(len(teams_dict[1980]['Team'].values)):
     team1981attend= teams_dict[1981].loc[teams_dict[1981]['Team']==teams_dict[1980]['Team'].values[i]]['Attend.']
     teams_dict[1980].at[i,'Attend.']=team1981attend
         
-teams_adj = pd.DataFrame(columns=
-    ['Rk_x', 'G_x', 'MP_x', 'FG_x', 'FGA_x', 'FG%_x', '3P_x', '3PA_x', '3P%_x', '2P_x', 
-     '2PA_x', '2P%_x', 'FT_x', 'FTA_x', 'FT%_x', 'ORB_x', 'DRB_x', 'TRB_x', 'AST_x', 
-     'STL_x', 'BLK_x', 'TOV_x', 'PF_x', 'PTS_x', 'year_x', 'Rk_y', 'G_y', 'MP_y', 'FG_y', 
-     'FGA_y', 'FG%_y', '3P_y', '3PA_y', '3P%_y', '2P_y', '2PA_y', '2P%_y', 'FT_y', 'FTA_y', 
-     'FT%_y', 'ORB_y', 'DRB_y', 'TRB_y', 'AST_y', 'STL_y', 'BLK_y', 'TOV_y', 'PF_y', 'PTS_y', 
-     'year_y', 'Rk', 'Age', 'W', 'L', 'PW', 'PL', 'MOV', 'SOS', 'SRS', 'ORtg', 'DRtg', 'Pace', 
-     'FTr', '3PAr', 'TS%', 'eFG%Off', 'TOV%Off', 'ORB%', 'FT/FGAOff', 'eFG%Def', 'TOV%Def', 'DRB%', 'FT/FGADef', 
-     'Attend.', 'Attend./G', 'year', 'Team1', 'Rk_x2', 'G_x2', 'MP_x2', 'FG_x2', 'FGA_x2', 
-     'FG%_x2', '3P_x2', '3PA_x2', '3P%_x2', '2P_x2', '2PA_x2', '2P%_x2', 'FT_x2', 'FTA_x2', 
-     'FT%_x2', 'ORB_x2', 'DRB_x2', 'TRB_x2', 'AST_x2', 'STL_x2', 'BLK_x2', 'TOV_x2', 'PF_x2', 
-     'PTS_x2', 'year_x2', 'Rk_y2', 'G_y2', 'MP_y2', 'FG_y2', 'FGA_y2', 'FG%_y2', '3P_y2', '3PA_y2', 
-     '3P%_y2', '2P_y2', '2PA_y2', '2P%_y2', 'FT_y2', 'FTA_y2', 'FT%_y2', 'ORB_y2', 'DRB_y2', 'TRB_y2', 
-     'AST_y2', 'STL_y2', 'BLK_y2', 'TOV_y2', 'PF_y2', 'PTS_y2', 'year_y2', 'Rk2', 'Age2', 'W2', 'L2', 
-     'PW2', 'PL2', 'MOV2', 'SOS2', 'SRS2', 'ORtg2', 'DRtg2', 'Pace2', 'FTr2', '3PAr2', 'TS%2', 'eFG%Off2', 
-     'TOV%Off2', 'ORB%2', 'FT/FGAOff2', 'eFG%Def2', 'TOV%Def2', 'DRB%2', 'FT/FGADef2', 'Attend.2', 'Attend./G2', 'year2', 'Team12' ])
+teams_adj = pd.DataFrame(columns=np.append(teams_dict[2018].columns.values, teams_dict[2018].columns.values+'2'))
 
 #Make datasets consistent in terms of team names
 
 for i in range(len(playerMoveDS)): 
-    team=a[i][4] 
-    team1=a[i][54]
+    team=playerMoveDS[i][4] 
+    team1=playerMoveDS[i][54]
     
-    year=a[i][0]
-    year2=a[i][50]
+    year=playerMoveDS[i][0]
+    year2=playerMoveDS[i][50]
     stryear=str(year)
     stryear2=str(year2)
     
@@ -213,29 +198,15 @@ for i in range(len(playerMoveDS)):
 
     row1=c[stryear].loc[[team]]
     row2=c[stryear2].loc[[team1]]
-    
-    row2.columns=['Rk_x2', 'G_x2', 'MP_x2', 'FG_x2', 'FGA_x2', 
-     'FG%_x2', '3P_x2', '3PA_x2', '3P%_x2', '2P_x2', '2PA_x2', '2P%_x2', 'FT_x2', 'FTA_x2', 
-     'FT%_x2', 'ORB_x2', 'DRB_x2', 'TRB_x2', 'AST_x2', 'STL_x2', 'BLK_x2', 'TOV_x2', 'PF_x2', 
-     'PTS_x2', 'year_x2', 'Rk_y2', 'G_y2', 'MP_y2', 'FG_y2', 'FGA_y2', 'FG%_y2', '3P_y2', '3PA_y2', 
-     '3P%_y2', '2P_y2', '2PA_y2', '2P%_y2', 'FT_y2', 'FTA_y2', 'FT%_y2', 'ORB_y2', 'DRB_y2', 'TRB_y2', 
-     'AST_y2', 'STL_y2', 'BLK_y2', 'TOV_y2', 'PF_y2', 'PTS_y2', 'year_y2', 'Rk2', 'Age2', 'W2', 'L2', 
-     'PW2', 'PL2', 'MOV2', 'SOS2', 'SRS2', 'ORtg2', 'DRtg2', 'Pace2', 'FTr2', '3PAr2', 'TS%2', 'eFG%Off2', 
-     'TOV%Off2', 'ORB%2', 'FT/FGAOff2', 'eFG%Def2', 'TOV%Def2', 'DRB%2', 'FT/FGADef2', 'Attend.2', 'Attend./G2', 'year2', 'Team12']
-
+    row2.columns=teams_dict[2018].columns.values+'2'
     rows=pd.concat([row1.reset_index(drop=True), row2.reset_index(drop=True)], axis=1)
-
-        #print(row)
+    
     teamsadj=teamsadj.append(rows.iloc[0],ignore_index=True)
     
 PlayerTeamDF = pd.concat([playerMoveDS.reset_index(drop=True), teamsadj], axis=1)
 
 #Interesting Variables: G1, GS1, MP1, USG%1,3PA1, 2PA1,FTA1
-regPT = PlayerTeamDF
-len(regPT.columns.values)
-
-
-regPT=regPT.drop(['Team', 'Year', 'Year1', 'Player1',
+PlayerTeamDF=PlayerTeamDF.drop(['Team', 'Year', 'Year1', 'Player1',
        'Pos1', 'Age1', 'Tm1', 'G1', 'GS1', 'PER1', 'TS%1', '3PAr1',
        'FTr1', 'ORB%1', 'DRB%1', 'TRB%1', 'AST%1', 'STL%1', 'BLK%1',
        'TOV%1', 'OWS1', 'DWS1', 'WS1', 'OBPM1',
@@ -245,7 +216,7 @@ regPT=regPT.drop(['Team', 'Year', 'Year1', 'Player1',
        'PTS1'], axis=1)
     
     
-regPT.columns=['Player', 'Pos', 'Age', 'G', 'GS', 'MP', 'PER', 'TS%', '3PAr',
+PlayerTeamDF.columns=['Player', 'Pos', 'Age', 'G', 'GS', 'MP', 'PER', 'TS%', '3PAr',
        'FTr', 'ORB%', 'DRB%', 'TRB%', 'AST%', 'STL%', 'BLK%', 'TOV%',
        'USG%', 'OWS', 'DWS', 'WS', 'WS/48', 'OBPM', 'DBPM', 'BPM', 'VORP',
        'FG', 'FGA', 'FG%', '3P', '3PA', '3P%', '2P', '2PA', '2P%', 'eFG%',
