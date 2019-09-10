@@ -1,4 +1,19 @@
 import pandas as pd
+import numpy as np
+from sklearn.linear_model import SGDRegressor
+from sklearn.metrics import mean_absolute_error
+from sklearn.preprocessing import StandardScaler
+from hyperopt import Trials, STATUS_OK, tpe
+from keras.datasets import mnist
+from keras.layers.core import Dense, Dropout, Activation
+from keras.models import Sequential
+from keras.utils import np_utils
+from hyperas import optim
+from hyperas.distributions import choice, uniform
+from keras import optimizers
+import tensorflow as tf
+
+
 df = pd.read_csv('Seasons_Stats.csv')
 
 df2= df.sort_values(by=['Player', 'Year'])
@@ -20,7 +35,6 @@ playerMoveDS = pd.DataFrame(columns=['Unnamed: 0', 'Year', 'Player', 'Pos', 'Age
        'PTS1'])
 
 npdf2=df2.values
-import numpy as np
 
 #Detect instances of players switching teams
 
@@ -743,10 +757,6 @@ regPT=regPT2
 
 #SGD Regressor comparison; We compare proposed algo to SGD Regressor
 
-from sklearn.linear_model import SGDRegressor
-from sklearn.metrics import mean_absolute_error
-from sklearn.preprocessing import StandardScaler
-
 X=regPT.loc[:, 'Age':'Attend.Team2Diff']
 y=regPT['WS/481']
 
@@ -780,23 +790,6 @@ robust = SGDRegressor(loss='huber',
 robust.fit(train_data, train_ws)
 
 mean_absolute_error(test_ws, robust.predict(test_data))
-
-import numpy as np
-import keras
-
-from hyperopt import Trials, STATUS_OK, tpe
-from keras.datasets import mnist
-from keras.layers.core import Dense, Dropout, Activation
-from keras.models import Sequential
-from keras.utils import np_utils
-#import keras
-
-from hyperas import optim
-from hyperas.distributions import choice, uniform
-from keras import optimizers
-import pandas as pd
-import tensorflow as tf
-
 
 def data():
     
