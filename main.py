@@ -16,9 +16,9 @@ import tensorflow as tf
 
 df = pd.read_csv('Seasons_Stats.csv')
 
-df2= df.sort_values(by=['Player', 'Year'])
-df2=df2.dropna(subset=['Player'])
-df2 = df2[df.Tm != "TOT"]
+df= df.sort_values(by=['Player', 'Year'])
+df=df.dropna(subset=['Player'])
+df = df[df.Tm != "TOT"]
 
 playerMoveDS = pd.DataFrame(columns=['Unnamed: 0', 'Year', 'Player', 'Pos', 'Age', 'Tm', 'G', 'GS',
        'MP', 'PER', 'TS%', '3PAr', 'FTr', 'ORB%', 'DRB%', 'TRB%', 'AST%',
@@ -34,7 +34,7 @@ playerMoveDS = pd.DataFrame(columns=['Unnamed: 0', 'Year', 'Player', 'Pos', 'Age
        'FT%1', 'ORB1', 'DRB1', 'TRB1', 'AST1', 'STL1', 'BLK1', 'TOV1', 'PF1',
        'PTS1'])
 
-npdf2=df2.values
+npdf2=df.values
 
 #Detect instances of players switching teams
 
@@ -48,7 +48,7 @@ for i in range(npdf2.shape[0]):
             j+=1
             
 
-colstostd=['OBPM', 'DBPM', 'BPM','FG', 'FGA',
+cols_to_standardize=['OBPM', 'DBPM', 'BPM','FG', 'FGA',
        '3P', '3PA', '2P', '2PA', 'FT', 'FTA',
        'ORB', 'DRB', 'TRB', 'AST', 'STL', 'BLK', 'TOV', 'PF',
        'PTS', 'MP1','OBPM1', 'DBPM1', 'BPM1','FG1', 'FGA1',
@@ -58,20 +58,14 @@ colstostd=['OBPM', 'DBPM', 'BPM','FG', 'FGA',
 
 #Put stats on per minute basis (except for percentage stats)
 
-for i in colstostd:
+for i in cols_to_standardize:
     playerMoveDS[i]=playerMoveDS[i]/playerMoveDS['MP']
 
-
 playerMoveDS['MP']=playerMoveDS['MP']/playerMoveDS['G']
-
 playerMoveDS=playerMoveDS.round(4)
-
-
 playerMoveDS=playerMoveDS.drop(['blanl','blanl1', 'blank2', 'blank21','Unnamed: 01', 'Unnamed: 0'], axis=1)
-
 playerMoveDS["Year"] = playerMoveDS["Year"].astype(int)
 playerMoveDS["Year1"] = playerMoveDS["Year1"].astype(int)
-
 playerMoveDS = playerMoveDS.rename(columns={'Tm': 'Team'})
 
 playerMoveDS['Team']=playerMoveDS['Team'].replace({'GSW': 'Golden State Warriors'}, regex=True)
