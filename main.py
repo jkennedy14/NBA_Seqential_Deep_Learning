@@ -19,7 +19,7 @@ df= df.sort_values(by=['Player', 'Year'])
 df=df.dropna(subset=['Player'])
 df = df[df.Tm != "TOT"]
 
-playerMoveDS = pd.DataFrame(columns=np.append(df.columns.values, df.columns.values+'1'))
+playerMoveDS = pd.DataFrame(columns=np.append(df.columns.values+'1', df.columns.values+'2'))
 npdf=df.values
 
 #Detect instances of players switching teams
@@ -32,26 +32,30 @@ for i in range(npdf.shape[0]):
             playerMoveDS.loc[j]=a
             j+=1
             
-cols_to_standardize=['OBPM', 'DBPM', 'BPM','FG', 'FGA',
-       '3P', '3PA', '2P', '2PA', 'FT', 'FTA',
-       'ORB', 'DRB', 'TRB', 'AST', 'STL', 'BLK', 'TOV', 'PF',
-       'PTS', 'MP1','OBPM1', 'DBPM1', 'BPM1','FG1', 'FGA1',
+cols_to_standardize_1=['OBPM1', 'DBPM1', 'BPM1','FG1', 'FGA1',
        '3P1', '3PA1', '2P1', '2PA1', 'FT1', 'FTA1',
        'ORB1', 'DRB1', 'TRB1', 'AST1', 'STL1', 'BLK1', 'TOV1', 'PF1',
-       'PTS1', 'DWS', 'OWS']
+       'PTS1']
+cols_to_standardize_2= ['OBPM2', 'DBPM2', 'BPM2','FG2', 'FGA2',
+       '3P2', '3PA2', '2P2', '2PA2', 'FT2', 'FTA2',
+       'ORB2', 'DRB2', 'TRB2', 'AST2', 'STL2', 'BLK2', 'TOV2', 'PF2',
+       'PTS2', 'DWS', 'OWS']
 
 #Put stats on per minute basis (except for percentage stats)
 
-for i in cols_to_standardize:
-    playerMoveDS[i]=playerMoveDS[i]/playerMoveDS['MP']
+for i in cols_to_standardize_1:
+    playerMoveDS[i]=playerMoveDS[i]/playerMoveDS['MP1']
+for i in cols_to_standardize_2:
+    playerMoveDS[i]=playerMoveDS[i]/playerMoveDS['MP2']
 
-playerMoveDS['MP']=playerMoveDS['MP']/playerMoveDS['G']
+playerMoveDS['MP1']=playerMoveDS['MP1']/playerMoveDS['G1']
+playerMoveDS['MP2']=playerMoveDS['MP2']/playerMoveDS['G2']
 playerMoveDS=playerMoveDS.round(4)
 playerMoveDS=playerMoveDS.drop(['blanl','blanl1', 'blank2', 'blank21','Unnamed: 01', 'Unnamed: 0'], axis=1)
-playerMoveDS["Year"] = playerMoveDS["Year"].astype(int)
 playerMoveDS["Year1"] = playerMoveDS["Year1"].astype(int)
-playerMoveDS = playerMoveDS.rename(columns={'Tm': 'Team'})
-playerMoveDS = playerMoveDS.rename(columns={'Tm1': 'Team2'})
+playerMoveDS["Year2"] = playerMoveDS["Year2"].astype(int)
+playerMoveDS = playerMoveDS.rename(columns={'Tm1': 'Team1'})
+playerMoveDS = playerMoveDS.rename(columns={'Tm2': 'Team2'})
 
 team_name_replace_dict={'GSW': 'Golden State Warriors', 'LAL': 'Los Angeles Lakers','PHO': 'Phoenix Suns',
                        'DAL': 'Dallas Mavericks','CHI': 'Chicago Bulls','IND': 'Indiana Pacers',
@@ -67,7 +71,7 @@ team_name_replace_dict={'GSW': 'Golden State Warriors', 'LAL': 'Los Angeles Lake
                        'OKC': 'Oklahoma City Thunder','KCK': 'Kansas City Kings'
                        }
 
-playerMoveDS=playerMoveDS.replace({'Team': team_name_replace_dict}, regex=True)
+playerMoveDS=playerMoveDS.replace({'Team1': team_name_replace_dict}, regex=True)
 playerMoveDS=playerMoveDS.replace({'Team2': team_name_replace_dict}, regex=True)
 
 #Read in NBA season TEAM stats datasets (seperate from individual stats datasets) 
@@ -162,44 +166,41 @@ teams_adj = pd.DataFrame(columns=np.append(teams_dict[2018].columns.values, team
 #Make datasets consistent in terms of team names
 
 for i in range(playerMoveDS.shape[0]): 
-    team=playerMoveDS.iloc[i]['Team'] 
-    team1=playerMoveDS.iloc[i]['Team2']
+    team1=playerMoveDS.iloc[i]['Team1'] 
+    team2=playerMoveDS.iloc[i]['Team2']
     
-    year=playerMoveDS.iloc[i][0]
-    year2=playerMoveDS.iloc[i][50]
-    stryear=str(year)
-    stryear2=str(year2)
-    
-    #print(year, team, team1)
-    if year==2005 or year==2006 or year==2007:
-        if team=="New Orleans Hornets":
-            team="Charlotte Bobcats"
+    year1=playerMoveDS.iloc[i]['Year1']
+    year2=playerMoveDS.iloc[i]['Year2']
+
+    if year1==2005 or year1==2006 or year1==2007:
+        if team1=="New Orleans Hornets":
+            team1="Charlotte Bobcats"
     
     if year2==2005 or year2==2006 or year2==2007:
-        if team1=="New Orleans Hornets":
-            team1="Charlotte Bobcats"   
+        if team2=="New Orleans Hornets":
+            team2="Charlotte Bobcats"   
 
     hornetsyears=[2005,2006,2007,2008,2009,2010,2011,2012,2013,2014]
     bobcatsyears=[2015,2016,2017]
 
-    if year in hornetsyears:
-        if team=="Charlotte Hornets":
-            team="Charlotte Bobcats"
-
-    if year2 in hornetsyears:
+    if year1 in hornetsyears:
         if team1=="Charlotte Hornets":
             team1="Charlotte Bobcats"
 
-    if year in bobcatsyears:
-        if team=="Charlotte Bobcats":
-            team="Charlotte Hornets"
-    
-    if year2 in bobcatsyears:
+    if year2 in hornetsyears:
+        if team2=="Charlotte Hornets":
+            team2="Charlotte Bobcats"
+
+    if year1 in bobcatsyears:
         if team1=="Charlotte Bobcats":
             team1="Charlotte Hornets"
+    
+    if year2 in bobcatsyears:
+        if team2=="Charlotte Bobcats":
+            team2="Charlotte Hornets"
 
-    row1=teams_dict[stryear].loc[[team]]
-    row2=teams_dict[stryear2].loc[[team1]]
+    row1=teams_dict[str(year1)].loc[[team1]]
+    row2=teams_dict[str(year2)].loc[[team2]]
     row2.columns=teams_dict[2018].columns.values+'2'
     rows=pd.concat([row1.reset_index(drop=True), row2.reset_index(drop=True)], axis=1)
     
@@ -208,17 +209,17 @@ for i in range(playerMoveDS.shape[0]):
 PlayerTeamDF = pd.concat([playerMoveDS.reset_index(drop=True), teamsadj], axis=1)
 
 #Interesting Variables: G1, GS1, MP1, USG%1,3PA1, 2PA1,FTA1
-PlayerTeamDF=PlayerTeamDF.drop(['Team', 'Year', 'Year1', 'Player1',
-       'Pos1', 'Age1', 'Tm1', 'G1', 'GS1', 'PER1', 'TS%1', '3PAr1',
-       'FTr1', 'ORB%1', 'DRB%1', 'TRB%1', 'AST%1', 'STL%1', 'BLK%1',
-       'TOV%1', 'OWS1', 'DWS1', 'WS1', 'OBPM1',
-       'DBPM1', 'BPM1', 'VORP1', 'FG1', 'FGA1', 'FG%1', '3P1',
-       '3P%1', '2P1', '2P%1', 'eFG%1', 'FT1', 'FTA1', 'FT%1',
-       'ORB1', 'DRB1', 'TRB1', 'AST1', 'STL1', 'BLK1', 'TOV1', 'PF1',
-       'PTS1'], axis=1)
+PlayerTeamDF=PlayerTeamDF.drop(['Team1', 'Year1', 'Year2', 'Player2',
+       'Pos2', 'Age2', 'Tm2', 'G2', 'GS2', 'PER2', 'TS%2', '3PAr2',
+       'FTr2', 'ORB%2', 'DRB%2', 'TRB%2', 'AST%2', 'STL%2', 'BLK%2',
+       'TOV%2', 'OWS2', 'DWS2', 'WS2', 'OBPM2',
+       'DBPM2', 'BPM2', 'VORP2', 'FG2', 'FGA2', 'FG%2', '3P2',
+       '3P%2', '2P2', '2P%2', 'eFG%2', 'FT2', 'FTA2', 'FT%2',
+       'ORB2', 'DRB2', 'TRB2', 'AST2', 'STL2', 'BLK2', 'TOV2', 'PF2',
+       'PTS2'], axis=1)
     
-    
-PlayerTeamDF.columns=['Player', 'Pos', 'Age', 'G', 'GS', 'MP', 'PER', 'TS%', '3PAr',
+regPT=PlayerTeamDF.copy()
+regPT.columns=['Player', 'Pos', 'Age', 'G', 'GS', 'MP', 'PER', 'TS%', '3PAr',
        'FTr', 'ORB%', 'DRB%', 'TRB%', 'AST%', 'STL%', 'BLK%', 'TOV%',
        'USG%', 'OWS', 'DWS', 'WS', 'WS/48', 'OBPM', 'DBPM', 'BPM', 'VORP',
        'FG', 'FGA', 'FG%', '3P', '3PA', '3P%', '2P', '2PA', '2P%', 'eFG%',
