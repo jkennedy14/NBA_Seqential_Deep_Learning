@@ -81,38 +81,13 @@ playerMoveDS=playerMoveDS.replace({'Team2': team_name_replace_dict}, regex=True)
 team_data={}
 for i in range(1980,2019):
        team_data[i]={}
-       td=pd.read_excel('nba'+str(i)+'.xlsx', header=None)
-       if i==1982:
-              td=td.drop([27], axis=1)
-       if i==1980:
-              team=td[:24]
-              opp=td[25:49]
-              misc=td[50:]
-       elif i in list(range(1981, 1989)):
-              team=td[:25]
-              opp=td[26:51]
-              misc=td[52:]
-       elif i == 1989:
-              team=td[:27]
-              opp=td[28:55]
-              misc=td[56:]
-       elif i in list(range(1990,1996)):
-              team=td[:29]
-              opp=td[30:59]
-              misc=td[60:]
-       elif i in list(range(1996,2005)):
-              team=td[:31]
-              opp=td[32:63]
-              misc=td[64:]
-       elif i in list(range(2005,2019)):
-              team=td[:32]
-              opp=td[33:65]
-              misc=td[66:]
-       
-       team=team[1:]
-       opp=opp[1:]
-       misc=misc[1:]
-       
+       td=pd.read_excel('nba'+str(i)+'.xlsx', header=0)
+       na_ind=nba1980.index[nba1980['Team'].isna()].tolist()
+       #:a, a+2:b , b+2: 
+       team=td[:na_ind[0]]
+       opp=td[na_ind[0]+2:na_ind[1]]
+       misc=td[na_ind[1]+2:]
+        
        team=team.drop(['z'], axis=1)
        opp=opp.drop(['z'], axis=1)
        misc=misc.drop(['Arena'], axis=1)
