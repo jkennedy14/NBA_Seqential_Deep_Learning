@@ -108,8 +108,6 @@ for i in range(1980,2019):
               team=td[:32]
               opp=td[33:65]
               misc=td[66:]
-       if i==2018:
-              misc=misc[1:]
        
        team=team[1:]
        opp=opp[1:]
