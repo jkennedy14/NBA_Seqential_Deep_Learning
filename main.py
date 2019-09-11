@@ -20,15 +20,15 @@ df=df.dropna(subset=['Player'])
 df = df[df.Tm != "TOT"]
 
 playerMoveDS = pd.DataFrame(columns=np.append(df.columns.values+'1', df.columns.values+'2'))
-npdf=df.values
+np_df=df.values
 
 #Detect instances of players switching teams
 
 j=0
-for i in range(npdf.shape[0]):
-    if npdf[i][2]==npdf[i-1][2]:
-        if npdf[i][5]!=npdf[i-1][5]:
-            a=np.append(npdf[i-1],npdf[i])
+for i in range(np_df.shape[0]):
+    if np_df[i][2]==np_df[i-1][2]:
+        if np_df[i][5]!=np_df[i-1][5]:
+            a=np.append(np_df[i-1],np_df[i])
             playerMoveDS.loc[j]=a
             j+=1
             
